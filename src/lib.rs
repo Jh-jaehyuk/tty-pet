@@ -2,6 +2,7 @@ pub mod app;
 pub mod cli;
 pub mod config;
 pub mod db;
+pub mod interactions;
 pub mod mood;
 pub mod project;
 pub mod time;

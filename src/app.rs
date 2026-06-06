@@ -3,6 +3,7 @@ use rusqlite::Connection;
 
 use crate::config::{self, AppPaths};
 use crate::db::{self, repository};
+use crate::interactions::{self, Interaction};
 use crate::project::{git, identity, ProjectIdentity};
 use crate::tui;
 
@@ -43,6 +44,18 @@ pub fn mark_test_pass() -> Result<()> {
 pub fn mark_test_fail() -> Result<()> {
     mark_test("test_fail", Some("fail"), 0)?;
     println!("tty-pet: marked tests as failed.");
+    Ok(())
+}
+
+pub fn interact(interaction: Interaction) -> Result<()> {
+    let context = AppContext::load()?;
+    let connection = context.open_database()?;
+
+    repository::ensure_project(&connection, &context.project)?;
+    repository::ensure_pet_state(&connection, &context.project.id)?;
+    interactions::record(&connection, &context.project.id, interaction)?;
+    println!("{}", interaction.confirmation());
+
     Ok(())
 }
 

@@ -11,6 +11,10 @@ Keep the MVP small:
 - `tty-pet watch`
 - `tty-pet pass`
 - `tty-pet fail`
+- `tty-pet poke`
+- `tty-pet treat`
+- `tty-pet call`
+- `tty-pet nap`
 - `tty-pet status`
 - One default cat-like ASCII pet
 - Per-project SQLite state
@@ -135,6 +139,13 @@ Do not introduce scoring, machine learning, or complex state machines for the MV
 1. Resolve the current project.
 2. Insert `test_fail` event.
 3. Update last test state without punitive counters.
+
+`tty-pet poke/treat/call/nap`:
+
+1. Resolve the current project.
+2. Insert the matching interaction event.
+3. Apply any small bond change from the shared interaction spec.
+4. Let `watch` react by polling recent SQLite events.
 
 `tty-pet status`:
 

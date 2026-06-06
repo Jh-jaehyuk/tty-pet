@@ -12,6 +12,7 @@ use ratatui::Terminal;
 
 use crate::app::AppContext;
 use crate::db::{self, repository};
+use crate::interactions::{self, Interaction};
 use crate::mood::phrases;
 use crate::mood::rules::{self, ObservedState};
 use crate::project::git;
@@ -46,12 +47,15 @@ fn run_loop<B: Backend>(terminal: &mut Terminal<B>, context: AppContext) -> Resu
     loop {
         if event::poll(Duration::from_millis(50))? {
             if let Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press
-                    && (key.code == KeyCode::Char('q')
-                        || (key.code == KeyCode::Char('c')
-                            && key.modifiers.contains(KeyModifiers::CONTROL)))
-                {
-                    break;
+                if key.kind == KeyEventKind::Press {
+                    match key_action(key.code, key.modifiers) {
+                        KeyAction::Quit => break,
+                        KeyAction::Interact(interaction) => {
+                            interactions::record(&connection, &context.project.id, interaction)?;
+                            last_refresh = Instant::now() - Duration::from_secs(2);
+                        }
+                        KeyAction::Ignore => {}
+                    }
                 }
             }
         }
@@ -69,8 +73,9 @@ fn run_loop<B: Backend>(terminal: &mut Terminal<B>, context: AppContext) -> Resu
                 .as_ref()
                 .and_then(|event| event.created_at.parse::<i64>().ok())
                 .map(|created_at| now.saturating_sub(created_at) as u64);
+            let latest_event_kind = latest_event.map(|event| event.kind);
             let observed = ObservedState {
-                recent_event_kind: latest_event.map(|event| event.kind),
+                recent_event_kind: latest_event_kind.clone(),
                 recent_event_age_secs: event_age,
                 dirty_count,
                 focus_minutes: state.focus_minutes(),
@@ -83,7 +88,9 @@ fn run_loop<B: Backend>(terminal: &mut Terminal<B>, context: AppContext) -> Resu
             state.dirty_count = dirty_count;
             state.bond = pet_state.bond;
             state.last_test_status = pet_state.last_test_status;
-            state.phrase = phrases::phrase_for(mood, state.frame).to_string();
+            state.phrase =
+                phrases::phrase_for_event(mood, latest_event_kind.as_deref(), state.frame)
+                    .to_string();
             last_refresh = Instant::now();
         }
 
@@ -95,4 +102,64 @@ fn run_loop<B: Backend>(terminal: &mut Terminal<B>, context: AppContext) -> Resu
     }
 
     Ok(())
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum KeyAction {
+    Quit,
+    Interact(Interaction),
+    Ignore,
+}
+
+fn key_action(code: KeyCode, modifiers: KeyModifiers) -> KeyAction {
+    match code {
+        KeyCode::Char('q') => KeyAction::Quit,
+        KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => KeyAction::Quit,
+        KeyCode::Char('p') => KeyAction::Interact(Interaction::Poke),
+        KeyCode::Char('t') => KeyAction::Interact(Interaction::Treat),
+        KeyCode::Char('c') => KeyAction::Interact(Interaction::Call),
+        KeyCode::Char('n') => KeyAction::Interact(Interaction::Nap),
+        _ => KeyAction::Ignore,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn maps_watch_interaction_keys() {
+        assert_eq!(
+            key_action(KeyCode::Char('p'), KeyModifiers::empty()),
+            KeyAction::Interact(Interaction::Poke)
+        );
+        assert_eq!(
+            key_action(KeyCode::Char('t'), KeyModifiers::empty()),
+            KeyAction::Interact(Interaction::Treat)
+        );
+        assert_eq!(
+            key_action(KeyCode::Char('c'), KeyModifiers::empty()),
+            KeyAction::Interact(Interaction::Call)
+        );
+        assert_eq!(
+            key_action(KeyCode::Char('n'), KeyModifiers::empty()),
+            KeyAction::Interact(Interaction::Nap)
+        );
+    }
+
+    #[test]
+    fn ctrl_c_quits_instead_of_calling_pet() {
+        assert_eq!(
+            key_action(KeyCode::Char('c'), KeyModifiers::CONTROL),
+            KeyAction::Quit
+        );
+    }
+
+    #[test]
+    fn q_quits_watch_mode() {
+        assert_eq!(
+            key_action(KeyCode::Char('q'), KeyModifiers::empty()),
+            KeyAction::Quit
+        );
+    }
 }

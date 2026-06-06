@@ -19,7 +19,7 @@ The project should optimize for installability, charm, and a coherent MVP rather
 - Runtime mode: independent TUI app, not a shell wrapper.
 - Observation model: project-state watcher.
 - State storage: SQLite.
-- Scope: one default pet, project-specific state, manual test marks.
+- Scope: one default pet, project-specific state, manual test marks, small direct interactions.
 - Mood model: rule-based.
 - First binary name: `tty-pet`.
 
@@ -70,6 +70,22 @@ This command does not need to know whether a test command actually ran. It is in
 Records a test fail event for the current project.
 
 This should not punish the user or reduce bond in a way that makes the toy feel judgmental.
+
+### `tty-pet poke`
+
+Records a `poke` event for the current project. In watch mode, the pet briefly reacts in a playful way.
+
+### `tty-pet treat`
+
+Records a `treat` event for the current project. This increases bond and briefly makes the pet happy.
+
+### `tty-pet call`
+
+Records a `call` event for the current project. This gets the pet's attention without turning the tool into an assistant.
+
+### `tty-pet nap`
+
+Records a `nap` event for the current project. This briefly makes the pet sleepy or quieter.
 
 ### `tty-pet status`
 

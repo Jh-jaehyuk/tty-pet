@@ -9,12 +9,24 @@ pub struct ObservedState {
 }
 
 pub fn evaluate(state: &ObservedState) -> Mood {
+    if recent_event(state, "test_pass", 90) {
+        return Mood::Happy;
+    }
+
+    if recent_event(state, "treat", 90) {
+        return Mood::Happy;
+    }
+
+    if recent_event(state, "poke", 45) || recent_event(state, "call", 45) {
+        return Mood::Playful;
+    }
+
     if recent_event(state, "test_fail", 120) {
         return Mood::Worried;
     }
 
-    if recent_event(state, "test_pass", 90) {
-        return Mood::Happy;
+    if recent_event(state, "nap", 120) {
+        return Mood::Sleepy;
     }
 
     if state.dirty_count.unwrap_or(0) >= 10 {
@@ -69,6 +81,42 @@ mod tests {
         };
 
         assert_eq!(evaluate(&observed), Mood::Happy);
+    }
+
+    #[test]
+    fn treat_is_happy() {
+        let observed = ObservedState {
+            recent_event_kind: Some("treat".to_string()),
+            recent_event_age_secs: Some(30),
+            dirty_count: Some(12),
+            focus_minutes: 0,
+        };
+
+        assert_eq!(evaluate(&observed), Mood::Happy);
+    }
+
+    #[test]
+    fn poke_beats_recent_fail() {
+        let observed = ObservedState {
+            recent_event_kind: Some("poke".to_string()),
+            recent_event_age_secs: Some(30),
+            dirty_count: Some(12),
+            focus_minutes: 0,
+        };
+
+        assert_eq!(evaluate(&observed), Mood::Playful);
+    }
+
+    #[test]
+    fn nap_beats_dirty_count() {
+        let observed = ObservedState {
+            recent_event_kind: Some("nap".to_string()),
+            recent_event_age_secs: Some(30),
+            dirty_count: Some(12),
+            focus_minutes: 0,
+        };
+
+        assert_eq!(evaluate(&observed), Mood::Sleepy);
     }
 
     #[test]

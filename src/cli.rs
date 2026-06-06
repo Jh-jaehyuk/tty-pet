@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use crate::app;
+use crate::interactions::Interaction;
 
 #[derive(Debug, Parser)]
 #[command(name = "tty-pet")]
@@ -19,6 +20,14 @@ enum Command {
     Pass,
     /// Mark the current project's tests as failed.
     Fail,
+    /// Poke the current project's pet.
+    Poke,
+    /// Give the current project's pet a treat.
+    Treat,
+    /// Call the current project's pet.
+    Call,
+    /// Ask the current project's pet to nap.
+    Nap,
     /// Print the current project's pet state.
     Status {
         /// Include debug fields such as database path.
@@ -34,6 +43,10 @@ pub fn run() -> Result<()> {
         Command::Watch => app::watch(),
         Command::Pass => app::mark_test_pass(),
         Command::Fail => app::mark_test_fail(),
+        Command::Poke => app::interact(Interaction::Poke),
+        Command::Treat => app::interact(Interaction::Treat),
+        Command::Call => app::interact(Interaction::Call),
+        Command::Nap => app::interact(Interaction::Nap),
         Command::Status { debug } => app::status(debug),
     }
 }

@@ -216,11 +216,12 @@ Add direct toy-like interaction commands.
 
 Acceptance criteria:
 
-- `tty-pet poke` records a `poke` event for the current project.
-- `tty-pet treat` records a `treat` event for the current project.
-- `tty-pet nap` records a `nap` event for the current project.
-- Interaction commands use the same project resolution and database path behavior as `pass` and `fail`.
-- Watch mode reacts to recent interaction events through mood and phrase changes.
+- [x] `tty-pet poke` records a `poke` event for the current project.
+- [x] `tty-pet treat` records a `treat` event for the current project.
+- [x] `tty-pet call` records a `call` event for the current project.
+- [x] `tty-pet nap` records a `nap` event for the current project.
+- [x] Interaction commands use the same project resolution and database path behavior as `pass` and `fail`.
+- [x] Watch mode reacts to recent interaction events through mood and phrase changes.
 
 ## TP-018: Add Watch-Mode Key Interactions
 
@@ -228,11 +229,12 @@ Let users interact with the pet while the TUI is open.
 
 Acceptance criteria:
 
-- `p` records a `poke` event.
-- `t` records a `treat` event.
-- `n` records a `nap` event.
-- `q` and Ctrl-C still exit cleanly.
-- Key interactions share the same event-writing path as CLI interactions.
+- [x] `p` records a `poke` event.
+- [x] `t` records a `treat` event.
+- [x] `c` records a `call` event.
+- [x] `n` records a `nap` event.
+- [x] `q` and Ctrl-C still exit cleanly.
+- [x] Key interactions share the same event-writing path as CLI interactions.
 
 ## TP-019: Add Project-Specific Pet Name
 

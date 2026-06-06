@@ -6,18 +6,24 @@ It is intentionally more toy than productivity tool: a cute, playful TUI pet tha
 
 ## MVP
 
-The first release is scoped to one default pet, four commands, and project-local state.
+The first release is scoped to one default pet, passive watch mode, small direct interactions, and project-local state.
 
 ```sh
 tty-pet watch
 tty-pet pass
 tty-pet fail
+tty-pet poke
+tty-pet treat
+tty-pet call
+tty-pet nap
 tty-pet status
 ```
 
 `tty-pet watch` opens a small responsive TUI. It is meant to run in a second terminal tab, a tmux split, or a side pane while the developer keeps using their normal shell.
 
 `tty-pet pass` and `tty-pet fail` record test-result events for the current project. The watch view polls SQLite and reacts shortly after.
+
+`tty-pet poke`, `tty-pet treat`, `tty-pet call`, and `tty-pet nap` record small interaction events for the current project. In watch mode, the same interactions are available as `p`, `t`, `c`, and `n`.
 
 `tty-pet status` prints the current project's stored pet state and debug information such as the resolved project root and database path.
 

@@ -120,6 +120,7 @@ After CLI interactions work, `watch` can support a few direct keys:
 ```text
 p      poke
 t      treat
+c      call
 n      nap
 q      quit
 ctrl-c quit
