@@ -32,5 +32,64 @@ pub fn run(connection: &Connection) -> Result<()> {
         ",
     )?;
 
+    ensure_column(
+        connection,
+        "project_pet_state",
+        "custom_image_path",
+        "text null",
+    )?;
+    ensure_column(
+        connection,
+        "project_pet_state",
+        "custom_image_width",
+        "integer null",
+    )?;
+    ensure_column(
+        connection,
+        "project_pet_state",
+        "custom_image_height_scale",
+        "real null",
+    )?;
+    ensure_column(
+        connection,
+        "project_pet_state",
+        "custom_image_charset",
+        "text null",
+    )?;
+    ensure_column(
+        connection,
+        "project_pet_state",
+        "custom_image_invert",
+        "integer null",
+    )?;
+
+    Ok(())
+}
+
+fn ensure_column(
+    connection: &Connection,
+    table: &str,
+    column: &str,
+    column_definition: &str,
+) -> Result<()> {
+    let existing_column = connection
+        .prepare(&format!("pragma table_info({table})"))?
+        .query_map([], |row| row.get::<_, String>(1))?
+        .find_map(|name| match name {
+            Ok(name) if name == column => Some(Ok(name)),
+            Ok(_) => None,
+            Err(error) => Some(Err(error)),
+        })
+        .transpose()?;
+
+    if existing_column.is_some() {
+        return Ok(());
+    }
+
+    connection.execute(
+        &format!("alter table {table} add column {column} {column_definition}"),
+        [],
+    )?;
+
     Ok(())
 }

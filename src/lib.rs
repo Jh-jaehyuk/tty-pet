@@ -4,6 +4,7 @@ pub mod config;
 pub mod db;
 pub mod interactions;
 pub mod mood;
+pub mod pet;
 pub mod project;
 pub mod time;
 pub mod tui;

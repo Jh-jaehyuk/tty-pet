@@ -1,7 +1,7 @@
 use anyhow::Result;
 use rusqlite::{params, Connection, OptionalExtension};
 
-use crate::db::models::{PetState, ProjectEvent};
+use crate::db::models::{CustomImageConfig, PetState, ProjectEvent};
 use crate::project::ProjectIdentity;
 use crate::time;
 
@@ -54,7 +54,12 @@ pub fn pet_state(connection: &Connection, project_id: &str) -> Result<PetState> 
             last_event_kind,
             last_event_at,
             focus_started_at,
-            updated_at
+            updated_at,
+            custom_image_path,
+            custom_image_width,
+            custom_image_height_scale,
+            custom_image_charset,
+            custom_image_invert
         from project_pet_state
         where project_id = ?1
         ",
@@ -69,6 +74,7 @@ pub fn pet_state(connection: &Connection, project_id: &str) -> Result<PetState> 
                 last_event_at: row.get(5)?,
                 focus_started_at: row.get(6)?,
                 updated_at: row.get(7)?,
+                custom_image: custom_image_from_row(row)?,
             })
         },
     )?;
@@ -150,6 +156,81 @@ pub fn update_mood(connection: &Connection, project_id: &str, mood: &str) -> Res
     Ok(())
 }
 
+pub fn set_custom_image(
+    connection: &Connection,
+    project_id: &str,
+    config: &CustomImageConfig,
+) -> Result<()> {
+    let now = time::now_unix_seconds().to_string();
+
+    connection.execute(
+        "
+        update project_pet_state
+        set
+            custom_image_path = ?2,
+            custom_image_width = ?3,
+            custom_image_height_scale = ?4,
+            custom_image_charset = ?5,
+            custom_image_invert = ?6,
+            updated_at = ?7
+        where project_id = ?1
+        ",
+        params![
+            project_id,
+            config.path.to_string_lossy(),
+            config.width,
+            config.height_scale,
+            config.charset,
+            config.invert,
+            now
+        ],
+    )?;
+
+    Ok(())
+}
+
+pub fn clear_custom_image(connection: &Connection, project_id: &str) -> Result<()> {
+    let now = time::now_unix_seconds().to_string();
+
+    connection.execute(
+        "
+        update project_pet_state
+        set
+            custom_image_path = null,
+            custom_image_width = null,
+            custom_image_height_scale = null,
+            custom_image_charset = null,
+            custom_image_invert = null,
+            updated_at = ?2
+        where project_id = ?1
+        ",
+        params![project_id, now],
+    )?;
+
+    Ok(())
+}
+
+fn custom_image_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Option<CustomImageConfig>> {
+    let path: Option<String> = row.get(8)?;
+    let width: Option<u32> = row.get(9)?;
+    let height_scale: Option<f32> = row.get(10)?;
+    let charset: Option<String> = row.get(11)?;
+    let invert: Option<bool> = row.get(12)?;
+
+    Ok(match (path, width, height_scale, charset, invert) {
+        (Some(path), Some(width), Some(height_scale), Some(charset), Some(invert)) => {
+            Some(CustomImageConfig {
+                path: path.into(),
+                width,
+                height_scale,
+                charset,
+                invert,
+            })
+        }
+        _ => None,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -186,5 +267,36 @@ mod tests {
         assert_eq!(first_state.bond, 1);
         assert_eq!(second_state.last_test_status, None);
         assert_eq!(second_state.bond, 0);
+    }
+
+    #[test]
+    fn custom_image_can_be_set_and_cleared() {
+        let connection = Connection::open_in_memory().unwrap();
+        crate::db::migrations::run(&connection).unwrap();
+
+        let project = ProjectIdentity {
+            id: "project".to_string(),
+            root_path: PathBuf::from("/tmp/project"),
+            git_remote_url: None,
+        };
+        let config = CustomImageConfig {
+            path: PathBuf::from("/tmp/pet.png"),
+            width: 24,
+            height_scale: 0.5,
+            charset: "dense".to_string(),
+            invert: false,
+        };
+
+        ensure_project(&connection, &project).unwrap();
+        ensure_pet_state(&connection, &project.id).unwrap();
+        set_custom_image(&connection, &project.id, &config).unwrap();
+
+        let state = pet_state(&connection, &project.id).unwrap();
+        assert_eq!(state.custom_image, Some(config));
+
+        clear_custom_image(&connection, &project.id).unwrap();
+
+        let state = pet_state(&connection, &project.id).unwrap();
+        assert_eq!(state.custom_image, None);
     }
 }

@@ -1,6 +1,6 @@
 # Agent Guide
 
-This repository is for `tty-pet`, a Rust CLI/TUI project. The current phase is documentation and design only. Do not add a Rust scaffold, `Cargo.toml`, source files, generated lockfiles, or dependency metadata until the user asks for scaffolding.
+This repository is for `tty-pet`, a Rust CLI/TUI project. The scaffold exists; keep changes scoped to the documented MVP and commit meaningful feature/documentation increments.
 
 ## Product Contract
 
@@ -15,8 +15,9 @@ Keep the MVP small:
 - `tty-pet treat`
 - `tty-pet call`
 - `tty-pet nap`
+- `tty-pet image set/clear/status`
 - `tty-pet status`
-- One default cat-like ASCII pet
+- One default cat-like ASCII pet plus optional project-specific image pet
 - Per-project SQLite state
 - Rule-based mood selection
 - Git dirty count polling
@@ -25,7 +26,7 @@ Avoid expanding the first release into shell integration, PTY wrapping, automati
 
 ## Architecture Shape
 
-When scaffolding begins, prefer this module structure:
+Prefer this module structure:
 
 ```text
 src/
@@ -46,11 +47,14 @@ src/
     mod.rs
     rules.rs
     phrases.rs
+  pet/
+    mod.rs
+    built_in.rs
+    custom_image.rs
   tui/
     mod.rs
     app_state.rs
     render.rs
-    sprites.rs
     terminal.rs
   time.rs
   error.rs
@@ -65,7 +69,8 @@ Expected responsibilities:
 - `project::git`: Shell out to `git status --porcelain` and parse only the dirty count.
 - `mood`: Convert observed state and recent events into a small mood enum.
 - `mood::phrases`: Store built-in phrase tables for the MVP.
-- `tui`: Own terminal lifecycle, tick loop, rendering, sprites, and responsive layout.
+- `pet`: Own built-in sprites and image-to-ASCII custom pet rendering.
+- `tui`: Own terminal lifecycle, tick loop, rendering, and responsive layout.
 - `app`: Coordinate project observation, DB reads/writes, and view state.
 
 Do not let rendering code query Git or write to SQLite directly. Keep side effects in the app/database/project layers.
@@ -90,6 +95,11 @@ project_pet_state
   last_event_kind text null
   last_event_at text null
   focus_started_at text null
+  custom_image_path text null
+  custom_image_width integer null
+  custom_image_height_scale real null
+  custom_image_charset text null
+  custom_image_invert integer null
   updated_at text not null
 
 project_events
@@ -147,6 +157,13 @@ Do not introduce scoring, machine learning, or complex state machines for the MV
 3. Apply any small bond change from the shared interaction spec.
 4. Let `watch` react by polling recent SQLite events.
 
+`tty-pet image set/clear/status`:
+
+1. Resolve the current project.
+2. Validate the image can render before saving it.
+3. Store or clear image path and render options in SQLite.
+4. Let `watch` render the configured image pet, falling back to the built-in sprite on error.
+
 `tty-pet status`:
 
 1. Resolve the current project.
@@ -166,6 +183,8 @@ Use the implementation issue list in [docs/IMPLEMENTATION_ISSUES.md](docs/IMPLEM
 - Use `git` CLI calls for MVP Git status instead of `git2`.
 - Treat missing Git, non-Git directories, and Git command failures as normal states.
 - Keep all pet phrases short enough for narrow terminal panes.
+- Store custom image settings in SQLite, not copied image blobs.
+- Keep `tty-pet` independently buildable; do not depend on a local checkout of `ascii_image_terminal`.
 
 ## Testing Priorities
 
@@ -178,3 +197,5 @@ High-value tests for the first scaffold:
 - DB migrations create all expected tables.
 - `pass` and `fail` commands update only the current project.
 - TUI layout handles narrow widths without panics.
+- Image pet settings can be set and cleared.
+- Custom image renderer maps dark pixels to dense ASCII characters.

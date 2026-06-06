@@ -19,7 +19,7 @@ The project should optimize for installability, charm, and a coherent MVP rather
 - Runtime mode: independent TUI app, not a shell wrapper.
 - Observation model: project-state watcher.
 - State storage: SQLite.
-- Scope: one default pet, project-specific state, manual test marks, small direct interactions.
+- Scope: one default pet, optional project-specific image pet, project-specific state, manual test marks, small direct interactions.
 - Mood model: rule-based.
 - First binary name: `tty-pet`.
 
@@ -87,6 +87,35 @@ Records a `call` event for the current project. This gets the pet's attention wi
 
 Records a `nap` event for the current project. This briefly makes the pet sleepy or quieter.
 
+### `tty-pet image set <path>`
+
+Uses an image file as the current project's pet.
+
+The command validates that the image can be rendered before saving the setting. The original image is not copied into SQLite; SQLite stores the normalized image path and render options.
+
+Supported formats:
+
+- PNG
+- JPG
+- JPEG
+
+Useful options:
+
+```text
+--width <columns>
+--height-scale <number>
+--charset <dense|simple>
+--invert
+```
+
+### `tty-pet image clear`
+
+Restores the built-in ASCII pet for the current project.
+
+### `tty-pet image status`
+
+Prints the current project's image pet configuration.
+
 ### `tty-pet status`
 
 Prints current project state and debug information.
@@ -118,6 +147,8 @@ Remote URL can be stored as nullable metadata but should not be the primary iden
 SQLite is the only IPC-like mechanism in MVP.
 
 `tty-pet pass` and `tty-pet fail` write project events. `tty-pet watch` periodically reads recent project events and reacts. No sockets, background daemon, lock server, or shell integration are needed.
+
+Custom image pets are stored as project settings in SQLite. The source image remains on disk and is referenced by path. This keeps the database small and lets users update or replace their own image files intentionally.
 
 Recommended tables are documented in [AGENTS.md](../AGENTS.md).
 
@@ -169,6 +200,21 @@ Phrase principles:
 - Non-commanding.
 - No guilt.
 - Light development flavor.
+
+## Custom Image Pet
+
+The image pet path reuses the image-to-ASCII approach from `ascii_image_terminal`, but the renderer lives inside `tty-pet` so the GitHub repository builds independently.
+
+Recommended defaults:
+
+```text
+width: 24
+height-scale: 0.5
+charset: dense
+invert: false
+```
+
+Watch mode should render a saved image pet when available and fall back to the built-in sprite if the image cannot be opened.
 
 ## Storage Locations
 

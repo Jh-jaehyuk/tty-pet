@@ -4,8 +4,8 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 use ratatui::Frame;
 
+use crate::pet::built_in;
 use crate::tui::app_state::WatchState;
-use crate::tui::sprites;
 
 pub fn render(frame: &mut Frame<'_>, state: &WatchState) {
     let area = frame.size();
@@ -38,10 +38,9 @@ pub fn render(frame: &mut Frame<'_>, state: &WatchState) {
     ]);
     frame.render_widget(Paragraph::new(header), chunks[0]);
 
-    let sprite_lines = sprites::sprite_for(state.mood, state.frame);
-    let (sprite_width, sprite_height) = sprite_dimensions(sprite_lines);
+    let sprite = sprite_body(state);
+    let (sprite_width, sprite_height) = sprite_dimensions(&sprite);
     let pet_area = moving_pet_area(chunks[1], sprite_width, sprite_height, state.frame);
-    let sprite = sprite_lines.join("\n");
     let pet = Paragraph::new(sprite).style(Style::default().fg(Color::Yellow));
     frame.render_widget(pet, pet_area);
 
@@ -50,6 +49,13 @@ pub fn render(frame: &mut Frame<'_>, state: &WatchState) {
         .alignment(Alignment::Center)
         .wrap(Wrap { trim: true });
     frame.render_widget(footer, chunks[2]);
+}
+
+fn sprite_body(state: &WatchState) -> String {
+    state.custom_sprite.as_ref().map_or_else(
+        || built_in::sprite_for(state.mood, state.frame).join("\n"),
+        |lines| lines.join("\n"),
+    )
 }
 
 fn moving_pet_area(area: Rect, sprite_width: u16, sprite_height: u16, frame: usize) -> Rect {
@@ -84,14 +90,14 @@ fn bouncing_offset(frame: usize, area_width: u16, sprite_width: u16) -> u16 {
     offset as u16
 }
 
-fn sprite_dimensions(lines: &[&str]) -> (u16, u16) {
-    let width = lines
-        .iter()
+fn sprite_dimensions(body: &str) -> (u16, u16) {
+    let width = body
+        .lines()
         .map(|line| line.chars().count())
         .max()
         .unwrap_or_default()
         .min(usize::from(u16::MAX)) as u16;
-    let height = lines.len().min(usize::from(u16::MAX)) as u16;
+    let height = body.lines().count().min(usize::from(u16::MAX)) as u16;
 
     (width, height)
 }
@@ -147,6 +153,6 @@ mod tests {
 
     #[test]
     fn sprite_dimensions_use_widest_line() {
-        assert_eq!(sprite_dimensions(&["cat", "long cat"]), (8, 2));
+        assert_eq!(sprite_dimensions("cat\nlong cat"), (8, 2));
     }
 }

@@ -15,6 +15,7 @@ use crate::db::{self, repository};
 use crate::interactions::{self, Interaction};
 use crate::mood::phrases;
 use crate::mood::rules::{self, ObservedState};
+use crate::pet::custom_image;
 use crate::project::git;
 use crate::time;
 use crate::tui::app_state::WatchState;
@@ -88,6 +89,7 @@ fn run_loop<B: Backend>(terminal: &mut Terminal<B>, context: AppContext) -> Resu
             state.dirty_count = dirty_count;
             state.bond = pet_state.bond;
             state.last_test_status = pet_state.last_test_status;
+            update_custom_sprite(&mut state, pet_state.custom_image.as_ref());
             state.phrase =
                 phrases::phrase_for_event(mood, latest_event_kind.as_deref(), state.frame)
                     .to_string();
@@ -102,6 +104,33 @@ fn run_loop<B: Backend>(terminal: &mut Terminal<B>, context: AppContext) -> Resu
     }
 
     Ok(())
+}
+
+fn update_custom_sprite(
+    state: &mut WatchState,
+    config: Option<&crate::db::models::CustomImageConfig>,
+) {
+    let Some(config) = config else {
+        state.custom_sprite = None;
+        state.custom_sprite_key = None;
+        return;
+    };
+    let key = config.render_key();
+
+    if state.custom_sprite_key.as_deref() == Some(key.as_str()) {
+        return;
+    }
+
+    match custom_image::render_config(config) {
+        Ok(rendered) => {
+            state.custom_sprite = Some(rendered.lines);
+            state.custom_sprite_key = Some(key);
+        }
+        Err(_) => {
+            state.custom_sprite = None;
+            state.custom_sprite_key = None;
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

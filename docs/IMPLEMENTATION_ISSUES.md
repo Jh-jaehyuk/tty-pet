@@ -247,6 +247,20 @@ Acceptance criteria:
 - `tty-pet watch` shows the pet name when space allows.
 - Names are stored in SQLite and do not require config files.
 
+## TP-020: Add Project-Specific Image Pet
+
+Use a chosen image file as the current project's pet.
+
+Acceptance criteria:
+
+- [x] `tty-pet image set <path>` validates and saves a PNG/JPG/JPEG image pet.
+- [x] `tty-pet image clear` restores the built-in pet.
+- [x] `tty-pet image status` shows saved image settings.
+- [x] Image settings persist in SQLite across runs.
+- [x] Watch mode renders the custom ASCII image when configured.
+- [x] Watch mode falls back to the built-in pet when the image cannot be rendered.
+- [x] The project remains independently buildable without a local `ascii_image_terminal` dependency.
+
 ## Deferred Issues
 
 These are intentionally not part of MVP:

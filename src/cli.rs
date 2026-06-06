@@ -1,8 +1,11 @@
-use anyhow::Result;
-use clap::{Parser, Subcommand};
+use std::path::PathBuf;
 
-use crate::app;
+use anyhow::Result;
+use clap::{Parser, Subcommand, ValueEnum};
+
+use crate::app::{self, ImageAction, ImageSetRequest};
 use crate::interactions::Interaction;
+use crate::pet::custom_image::AsciiCharset;
 
 #[derive(Debug, Parser)]
 #[command(name = "tty-pet")]
@@ -28,12 +31,60 @@ enum Command {
     Call,
     /// Ask the current project's pet to nap.
     Nap,
+    /// Configure a custom image pet for the current project.
+    Image {
+        #[command(subcommand)]
+        command: ImageCommand,
+    },
     /// Print the current project's pet state.
     Status {
         /// Include debug fields such as database path.
         #[arg(long)]
         debug: bool,
     },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ImageCommand {
+    /// Use an image file as this project's pet.
+    Set {
+        path: PathBuf,
+
+        /// ASCII output width for the pet image.
+        #[arg(long, default_value_t = 24)]
+        width: u32,
+
+        /// Terminal cell aspect correction.
+        #[arg(long, default_value_t = 0.5)]
+        height_scale: f32,
+
+        /// ASCII character set.
+        #[arg(long, value_enum, default_value_t = CliAsciiCharset::Dense)]
+        charset: CliAsciiCharset,
+
+        /// Reverse brightness mapping.
+        #[arg(long)]
+        invert: bool,
+    },
+    /// Restore the built-in pet.
+    Clear,
+    /// Print the current custom image configuration.
+    Status,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum CliAsciiCharset {
+    Dense,
+    Simple,
+}
+
+impl From<CliAsciiCharset> for AsciiCharset {
+    fn from(value: CliAsciiCharset) -> Self {
+        match value {
+            CliAsciiCharset::Dense => Self::Dense,
+            CliAsciiCharset::Simple => Self::Simple,
+        }
+    }
 }
 
 pub fn run() -> Result<()> {
@@ -47,6 +98,29 @@ pub fn run() -> Result<()> {
         Command::Treat => app::interact(Interaction::Treat),
         Command::Call => app::interact(Interaction::Call),
         Command::Nap => app::interact(Interaction::Nap),
+        Command::Image { command } => app::image(command.into()),
         Command::Status { debug } => app::status(debug),
+    }
+}
+
+impl From<ImageCommand> for ImageAction {
+    fn from(command: ImageCommand) -> Self {
+        match command {
+            ImageCommand::Set {
+                path,
+                width,
+                height_scale,
+                charset,
+                invert,
+            } => Self::Set(ImageSetRequest {
+                path,
+                width,
+                height_scale,
+                charset: charset.into(),
+                invert,
+            }),
+            ImageCommand::Clear => Self::Clear,
+            ImageCommand::Status => Self::Status,
+        }
     }
 }

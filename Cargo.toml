@@ -8,6 +8,7 @@ anyhow = "1.0"
 clap = { version = "=4.5.20", features = ["derive"] }
 crossterm = "=0.27.0"
 directories = "=5.0.1"
+image = { version = "=0.24.9", default-features = false, features = ["jpeg", "png"] }
 ratatui = "=0.26.3"
 rusqlite = { version = "=0.31.0", features = ["bundled"] }
 unicode-segmentation = "=1.11.0"

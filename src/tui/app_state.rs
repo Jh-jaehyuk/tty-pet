@@ -10,6 +10,8 @@ pub struct WatchState {
     pub phrase: String,
     pub bond: i64,
     pub last_test_status: Option<String>,
+    pub custom_sprite: Option<Vec<String>>,
+    pub custom_sprite_key: Option<String>,
     pub frame: usize,
     pub started_at: Instant,
 }
@@ -23,6 +25,8 @@ impl WatchState {
             phrase: "boop.".to_string(),
             bond: 0,
             last_test_status: None,
+            custom_sprite: None,
+            custom_sprite_key: None,
             frame: 0,
             started_at: Instant::now(),
         }

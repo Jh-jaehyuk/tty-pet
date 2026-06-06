@@ -2,7 +2,7 @@
 
 `tty-pet` is a tiny terminal companion that lives beside your coding session and reacts to your project state.
 
-It is intentionally more toy than productivity tool: a cute, playful TUI pet that watches a project, reacts to Git dirtiness and manually marked test results, and remembers a small per-project bond in SQLite.
+It is intentionally more toy than productivity tool: a cute, playful TUI pet that watches a project, reacts to Git dirtiness and manually marked test results, and remembers a small per-project bond in SQLite. You can use the built-in ASCII pet or set a project-specific pet from an image file.
 
 ## MVP
 
@@ -16,6 +16,9 @@ tty-pet poke
 tty-pet treat
 tty-pet call
 tty-pet nap
+tty-pet image set ~/Pictures/pet.png
+tty-pet image clear
+tty-pet image status
 tty-pet status
 ```
 
@@ -24,6 +27,8 @@ tty-pet status
 `tty-pet pass` and `tty-pet fail` record test-result events for the current project. The watch view polls SQLite and reacts shortly after.
 
 `tty-pet poke`, `tty-pet treat`, `tty-pet call`, and `tty-pet nap` record small interaction events for the current project. In watch mode, the same interactions are available as `p`, `t`, `c`, and `n`.
+
+`tty-pet image set <path>` stores a project-specific image pet. PNG, JPG, and JPEG files are rendered as ASCII and used by `watch` on the next refresh and future runs.
 
 `tty-pet status` prints the current project's stored pet state and debug information such as the resolved project root and database path.
 
@@ -36,6 +41,7 @@ The MVP observes project state, not the user's shell session.
 - Last manually recorded test event.
 - Focus/session duration while `watch` is running.
 - Per-project bond and mood stored in SQLite.
+- Per-project custom image pet settings.
 
 Shell integration, command interception, PTY wrapping, tmux automation, and automatic test command detection are deliberately out of scope for the first release.
 
@@ -81,6 +87,7 @@ otherwise                     -> idle/playful
 - TUI: `ratatui` + `crossterm`
 - Database: `rusqlite`
 - Directories: `directories`
+- Image rendering: `image`
 - Git state: shell out to `git status --porcelain` for the MVP
 
 ## Data Location
