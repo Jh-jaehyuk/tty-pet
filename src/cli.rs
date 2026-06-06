@@ -41,6 +41,9 @@ enum Command {
         /// Include debug fields such as database path.
         #[arg(long)]
         debug: bool,
+        /// Print machine-readable JSON for agents and scripts.
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -99,7 +102,7 @@ pub fn run() -> Result<()> {
         Command::Call => app::interact(Interaction::Call),
         Command::Nap => app::interact(Interaction::Nap),
         Command::Image { command } => app::image(command.into()),
-        Command::Status { debug } => app::status(debug),
+        Command::Status { debug, json } => app::status(app::StatusOptions { debug, json }),
     }
 }
 

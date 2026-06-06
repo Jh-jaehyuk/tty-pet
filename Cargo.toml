@@ -5,6 +5,15 @@ edition = "2021"
 license = "MIT"
 description = "A playful terminal pet that reacts to your project state."
 repository = "https://github.com/Jh-jaehyuk/tty-pet"
+default-run = "tty-pet"
+
+[[bin]]
+name = "tty-pet"
+path = "src/main.rs"
+
+[[bin]]
+name = "tty-pet-mcp"
+path = "src/bin/tty-pet-mcp.rs"
 
 [dependencies]
 anyhow = "1.0"
@@ -14,4 +23,6 @@ directories = "=5.0.1"
 image = { version = "=0.24.9", default-features = false, features = ["jpeg", "png"] }
 ratatui = "=0.26.3"
 rusqlite = { version = "=0.31.0", features = ["bundled"] }
+serde = { version = "=1.0.214", features = ["derive"] }
+serde_json = "=1.0.128"
 unicode-segmentation = "=1.11.0"

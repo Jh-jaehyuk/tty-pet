@@ -131,6 +131,19 @@ Useful output:
 - Last test status.
 - Last event timestamp.
 
+### `tty-pet status --json`
+
+Prints project state as machine-readable JSON for scripts, MCP tools, and agent plugins.
+
+### `tty-pet-mcp`
+
+Starts a local stdio MCP server. The server exposes safe tty-pet tools for agent clients:
+
+- `tty_pet_status`
+- `tty_pet_event`
+
+The MCP server must not expose arbitrary shell execution.
+
 ## Project Identity
 
 Project identity should resolve in this order:
@@ -149,6 +162,8 @@ SQLite is the only IPC-like mechanism in MVP.
 `tty-pet pass` and `tty-pet fail` write project events. `tty-pet watch` periodically reads recent project events and reacts. No sockets, background daemon, lock server, or shell integration are needed.
 
 Custom image pets are stored as project settings in SQLite. The source image remains on disk and is referenced by path. This keeps the database small and lets users update or replace their own image files intentionally.
+
+Agent integrations should use `status --json` or `tty-pet-mcp` rather than parsing human-readable CLI output.
 
 Recommended tables are documented in [AGENTS.md](../AGENTS.md).
 

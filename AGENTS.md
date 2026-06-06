@@ -17,6 +17,8 @@ Keep the MVP small:
 - `tty-pet nap`
 - `tty-pet image set/clear/status`
 - `tty-pet status`
+- `tty-pet status --json`
+- `tty-pet-mcp`
 - One default cat-like ASCII pet plus optional project-specific image pet
 - Per-project SQLite state
 - Rule-based mood selection
@@ -31,9 +33,13 @@ Prefer this module structure:
 ```text
 src/
   main.rs
+  bin/
+    tty-pet-mcp.rs
   app.rs
   cli.rs
   config.rs
+  interactions.rs
+  mcp.rs
   db/
     mod.rs
     migrations.rs
@@ -70,6 +76,7 @@ Expected responsibilities:
 - `mood`: Convert observed state and recent events into a small mood enum.
 - `mood::phrases`: Store built-in phrase tables for the MVP.
 - `pet`: Own built-in sprites and image-to-ASCII custom pet rendering.
+- `mcp`: Own the local stdio MCP server and expose only safe tty-pet tools.
 - `tui`: Own terminal lifecycle, tick loop, rendering, and responsive layout.
 - `app`: Coordinate project observation, DB reads/writes, and view state.
 
@@ -164,6 +171,13 @@ Do not introduce scoring, machine learning, or complex state machines for the MV
 3. Store or clear image path and render options in SQLite.
 4. Let `watch` render the configured image pet, falling back to the built-in sprite on error.
 
+`tty-pet-mcp`:
+
+1. Read newline-delimited JSON-RPC messages from stdin.
+2. Respond to `initialize`, `tools/list`, and `tools/call`.
+3. Expose only safe tools such as `tty_pet_status` and `tty_pet_event`.
+4. Do not expose arbitrary shell execution.
+
 `tty-pet status`:
 
 1. Resolve the current project.
@@ -185,6 +199,7 @@ Use the implementation issue list in [docs/IMPLEMENTATION_ISSUES.md](docs/IMPLEM
 - Keep all pet phrases short enough for narrow terminal panes.
 - Store custom image settings in SQLite, not copied image blobs.
 - Keep `tty-pet` independently buildable; do not depend on a local checkout of `ascii_image_terminal`.
+- Keep MCP tools narrow and deterministic; they should call app-level APIs, not spawn arbitrary shell commands.
 
 ## Testing Priorities
 
@@ -199,3 +214,5 @@ High-value tests for the first scaffold:
 - TUI layout handles narrow widths without panics.
 - Image pet settings can be set and cleared.
 - Custom image renderer maps dark pixels to dense ASCII characters.
+- `status --json` reports project state for agents.
+- `tty-pet-mcp` lists and calls safe MCP tools.

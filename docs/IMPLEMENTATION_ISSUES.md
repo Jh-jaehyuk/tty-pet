@@ -261,6 +261,21 @@ Acceptance criteria:
 - [x] Watch mode falls back to the built-in pet when the image cannot be rendered.
 - [x] The project remains independently buildable without a local `ascii_image_terminal` dependency.
 
+## TP-021: Add Agent-Facing MCP Interface
+
+Expose safe tty-pet operations to agent clients.
+
+Acceptance criteria:
+
+- [x] `tty-pet status --json` prints machine-readable project state.
+- [x] `tty-pet-mcp` starts a stdio JSON-RPC server.
+- [x] MCP `initialize` reports server info and tool capability.
+- [x] MCP `tools/list` exposes `tty_pet_status` and `tty_pet_event`.
+- [x] MCP `tty_pet_status` returns status JSON as text content.
+- [x] MCP `tty_pet_event` records safe event kinds only.
+- [x] JSON-RPC notifications do not emit responses.
+- [x] `TTY_PET_PROJECT_DIR` can override project resolution for plugin-launched processes.
+
 ## Deferred Issues
 
 These are intentionally not part of MVP:

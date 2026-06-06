@@ -20,6 +20,8 @@ tty-pet image set ~/Pictures/pet.png
 tty-pet image clear
 tty-pet image status
 tty-pet status
+tty-pet status --json
+tty-pet-mcp
 ```
 
 `tty-pet watch` opens a small responsive TUI. It is meant to run in a second terminal tab, a tmux split, or a side pane while the developer keeps using their normal shell.
@@ -31,6 +33,10 @@ tty-pet status
 `tty-pet image set <path>` stores a project-specific image pet. PNG, JPG, and JPEG files are rendered as ASCII and used by `watch` on the next refresh and future runs.
 
 `tty-pet status` prints the current project's stored pet state and debug information such as the resolved project root and database path.
+
+`tty-pet status --json` prints the same project state as machine-readable JSON for agents and scripts.
+
+`tty-pet-mcp` starts a local stdio MCP server that exposes safe `tty-pet` tools to agent clients.
 
 ## What It Watches
 
@@ -120,6 +126,7 @@ Otherwise the app should use the platform data directory returned by the selecte
 ## Documentation
 
 - [Design](docs/DESIGN.md)
+- [Agent Integration](docs/AGENT_INTEGRATION.md)
 - [Interaction Roadmap](docs/INTERACTIONS.md)
 - [Implementation Issues](docs/IMPLEMENTATION_ISSUES.md)
 - [Agent Guide](AGENTS.md)

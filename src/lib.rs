@@ -3,6 +3,7 @@ pub mod cli;
 pub mod config;
 pub mod db;
 pub mod interactions;
+pub mod mcp;
 pub mod mood;
 pub mod pet;
 pub mod project;
