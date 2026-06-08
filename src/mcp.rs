@@ -117,7 +117,7 @@ fn handle_tool_call(id: Option<Value>, params: Option<Value>) -> JsonRpcResponse
     };
 
     match name {
-        "tty_pet_status" => match app::status_json_string() {
+        "tty_pet_status" => match app::agent_status_json_string() {
             Ok(status) => JsonRpcResponse {
                 jsonrpc: "2.0",
                 id,

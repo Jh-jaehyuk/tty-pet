@@ -1,3 +1,4 @@
+pub mod agent_presentation;
 pub mod app;
 pub mod cli;
 pub mod config;

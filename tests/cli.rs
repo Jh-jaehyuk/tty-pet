@@ -131,7 +131,7 @@ fn mcp_notifications_do_not_emit_responses() {
 }
 
 #[test]
-fn mcp_status_tool_returns_tty_pet_status_json() {
+fn mcp_status_tool_returns_agent_presentation_json() {
     let term_pet_home = unique_temp_dir("mcp-status");
     let response = run_mcp_request(
         r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"tty_pet_status","arguments":{}}}"#,
@@ -141,14 +141,44 @@ fn mcp_status_tool_returns_tty_pet_status_json() {
     let text = response["result"]["content"][0]["text"]
         .as_str()
         .expect("status tool should return text content");
-    let status: Value = serde_json::from_str(text).expect("tool text should be status JSON");
+    let status: Value =
+        serde_json::from_str(text).expect("tool text should be structured status JSON");
 
-    assert_eq!(status["project"]["name"], "tty-pet");
-    assert_eq!(status["pet"]["image"]["kind"], "built-in");
-    assert!(status["debug"]["database_path"]
+    assert_eq!(status["reaction"]["mood"], "idle");
+    assert_eq!(status["reaction"]["phrase"], "tiny paws online.");
+    assert_eq!(status["state"]["project"]["name"], "tty-pet");
+    assert_eq!(status["state"]["bond"], 0);
+    assert_eq!(status["state"]["pet"]["image"]["kind"], "built-in");
+    assert_eq!(status["presentation"]["style"], "short_playful");
+    assert!(status["presentation"]["ko"]
         .as_str()
-        .expect("database path should be a string")
-        .contains("tty-pet-mcp-status"));
+        .expect("Korean presentation should be present")
+        .contains("현재 펫은 idle 상태예요"));
+}
+
+#[test]
+fn mcp_status_tool_mentions_recent_pet_event() {
+    let term_pet_home = unique_temp_dir("mcp-status-recent-event");
+    run_mcp_request(
+        r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"tty_pet_event","arguments":{"kind":"nap"}}}"#,
+        &term_pet_home,
+    );
+
+    let response = run_mcp_request(
+        r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"tty_pet_status","arguments":{}}}"#,
+        &term_pet_home,
+    );
+    let text = response["result"]["content"][0]["text"]
+        .as_str()
+        .expect("status tool should return text content");
+    let status: Value =
+        serde_json::from_str(text).expect("tool text should be structured status JSON");
+
+    assert_eq!(status["state"]["last_event_kind"], "nap");
+    assert!(status["presentation"]["ko"]
+        .as_str()
+        .expect("Korean presentation should be present")
+        .contains("방금 nap"));
 }
 
 #[test]
@@ -160,10 +190,23 @@ fn mcp_event_tool_records_safe_pet_event() {
     );
 
     assert_eq!(response["error"], Value::Null);
-    assert!(response["result"]["content"][0]["text"]
+    let text = response["result"]["content"][0]["text"]
         .as_str()
-        .expect("event tool should return text content")
-        .contains("treat"));
+        .expect("event tool should return text content");
+    let payload: Value =
+        serde_json::from_str(text).expect("event tool text should be structured JSON");
+
+    assert_eq!(payload["event"]["kind"], "treat");
+    assert_eq!(payload["reaction"]["mood"], "happy");
+    assert_eq!(payload["reaction"]["phrase"], "snack acquired.");
+    assert_eq!(payload["reaction"]["motion"], "hop");
+    assert_eq!(payload["state"]["bond"], 2);
+    assert_eq!(payload["state"]["last_event_kind"], "treat");
+    assert_eq!(
+        payload["presentation"]["ko"],
+        "간식 전달 완료. 펫이 바로 튀어나와서 받아 갔어요."
+    );
+    assert_eq!(payload["presentation"]["style"], "short_playful");
 
     let output = Command::new(env!("CARGO_BIN_EXE_tty-pet"))
         .args(["status", "--json"])

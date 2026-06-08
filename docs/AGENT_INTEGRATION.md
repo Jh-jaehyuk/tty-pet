@@ -30,10 +30,38 @@ Supported tools:
 - `tty_pet_status`
 - `tty_pet_event`
 
-`tty_pet_status` returns the same JSON as:
+`tty-pet status --json` returns factual machine JSON for scripts:
 
 ```sh
 tty-pet status --json
+```
+
+`tty_pet_status` and `tty_pet_event` return agent-facing JSON inside MCP text content. The payload includes factual state plus presentation material:
+
+```json
+{
+  "reaction": {
+    "mood": "playful",
+    "phrase": "tiny paws, big diff.",
+    "motion": "idle"
+  },
+  "state": {
+    "mood": "playful",
+    "bond": 7,
+    "last_test_status": "pass",
+    "last_event_kind": "treat"
+  },
+  "presentation": {
+    "ko": "현재 펫은 playful 상태예요. 방금 treat 이벤트를 기억하고 짧게 반응하고 있습니다.",
+    "en": "The pet is currently playful. It still remembers the recent treat and is giving a small reaction.",
+    "style": "short_playful",
+    "rules": [
+      "Do not invent state.",
+      "Do not give development advice.",
+      "Keep it to one or two short sentences."
+    ]
+  }
+}
 ```
 
 `tty_pet_event` accepts:
@@ -56,6 +84,8 @@ fail
 ```
 
 The MCP server does not expose arbitrary shell execution.
+
+Agent clients should treat `presentation.ko` and `presentation.en` as ready-to-use text. They may lightly adapt wording to match the user's language, but should not invent state, add development advice, or expand the answer beyond one or two short sentences.
 
 ## Project Resolution
 

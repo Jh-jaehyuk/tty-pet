@@ -2,6 +2,7 @@ use anyhow::Result;
 use rusqlite::Connection;
 use serde::Serialize;
 
+use crate::agent_presentation;
 use crate::config::{self, AppPaths};
 use crate::db::models::CustomImageConfig;
 use crate::db::{self, repository};
@@ -151,30 +152,29 @@ pub fn record_agent_event(kind: &str) -> Result<String> {
     match kind {
         "pass" => {
             mark_test("test_pass", Some("pass"), 1)?;
-            Ok("recorded pass".to_string())
         }
         "fail" => {
             mark_test("test_fail", Some("fail"), 0)?;
-            Ok("recorded fail".to_string())
         }
         "poke" => {
             record_interaction(Interaction::Poke)?;
-            Ok("recorded poke".to_string())
         }
         "treat" => {
             record_interaction(Interaction::Treat)?;
-            Ok("recorded treat".to_string())
         }
         "call" => {
             record_interaction(Interaction::Call)?;
-            Ok("recorded call".to_string())
         }
         "nap" => {
             record_interaction(Interaction::Nap)?;
-            Ok("recorded nap".to_string())
         }
         _ => anyhow::bail!("unsupported tty-pet event kind: {kind}"),
-    }
+    };
+
+    let status: serde_json::Value = serde_json::from_str(&status_json_string()?)?;
+    Ok(serde_json::to_string_pretty(
+        &agent_presentation::event_payload(kind, &status),
+    )?)
 }
 
 pub fn status(options: StatusOptions) -> Result<()> {
@@ -200,6 +200,14 @@ pub fn status_json_string() -> Result<String> {
     let current = current_status()?;
 
     Ok(serde_json::to_string_pretty(&current.report)?)
+}
+
+pub fn agent_status_json_string() -> Result<String> {
+    let status: serde_json::Value = serde_json::from_str(&status_json_string()?)?;
+
+    Ok(serde_json::to_string_pretty(
+        &agent_presentation::status_payload(&status),
+    )?)
 }
 
 fn current_status() -> Result<CurrentStatus> {
