@@ -71,6 +71,18 @@ This is useful when a plugin starts the MCP process from a plugin directory rath
 
 ## Claude Code
 
+The repository includes a Claude Code plugin bundle at:
+
+```text
+plugins/claude-code/tty-pet
+```
+
+The bundle contains:
+
+- `.claude-plugin/plugin.json`
+- `.mcp.json`
+- `skills/tty-pet/SKILL.md`
+
 Use a local stdio MCP configuration that launches `tty-pet-mcp`:
 
 ```json
@@ -87,9 +99,21 @@ Use a local stdio MCP configuration that launches `tty-pet-mcp`:
 }
 ```
 
-Claude Code plugins can package MCP server configurations, slash commands, and hooks. The recommended first plugin should only package this MCP configuration and a short skill/command guide. Avoid automatic pass/fail hooks until test-result detection is explicit.
+Claude Code plugins can package MCP server configurations, skills, and hooks. The bundled first plugin only packages this MCP configuration and a short skill guide. Avoid automatic pass/fail hooks until test-result detection is explicit.
 
 ## Codex
+
+The repository includes a Codex plugin bundle at:
+
+```text
+plugins/codex/tty-pet
+```
+
+The bundle contains:
+
+- `.codex-plugin/plugin.json`
+- `.mcp.json`
+- `skills/tty-pet/SKILL.md`
 
 Use the same MCP boundary:
 
@@ -119,7 +143,6 @@ cargo install --git https://github.com/Jh-jaehyuk/tty-pet --locked
 
 Recommended next steps:
 
-1. Add plugin directories for Claude Code and Codex.
-2. Add a `tty_pet_image_set` MCP tool if image selection through agents becomes useful.
-3. Add plugin validation commands to release docs.
-4. Consider hooks only for playful events like `call` or `nap`, not test pass/fail.
+1. Add a `tty_pet_image_set` MCP tool if image selection through agents becomes useful.
+2. Add plugin validation commands to release docs.
+3. Consider hooks only for playful events like `call` or `nap`, not test pass/fail.

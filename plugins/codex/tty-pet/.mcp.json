@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tty-pet": {
+      "command": "tty-pet-mcp",
+      "args": ["--stdio"]
+    }
+  }
+}

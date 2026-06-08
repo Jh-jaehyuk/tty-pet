@@ -38,6 +38,26 @@ tty-pet-mcp
 
 `tty-pet-mcp` starts a local stdio MCP server that exposes safe `tty-pet` tools to agent clients.
 
+## Agent Plugins
+
+`tty-pet` includes thin plugin bundles for agent clients:
+
+- `plugins/codex/tty-pet`
+- `plugins/claude-code/tty-pet`
+
+Install the CLI first so the plugin MCP configuration can find `tty-pet-mcp` on `PATH`:
+
+```sh
+cargo install --git https://github.com/Jh-jaehyuk/tty-pet --locked
+```
+
+Both plugin bundles expose the same local MCP tools:
+
+- `tty_pet_status`
+- `tty_pet_event`
+
+See [Agent Integration](docs/AGENT_INTEGRATION.md) for setup notes and client-specific details.
+
 ## What It Watches
 
 The MVP observes project state, not the user's shell session.
@@ -120,7 +140,7 @@ Otherwise the app should use the platform data directory returned by the selecte
 - Automatic test command detection
 - Multiple pets or skins
 - Phrase/config file loading
-- Plugin system
+- Automatic agent hooks that infer pass/fail without explicit user or agent intent
 - Growth systems beyond a small per-project bond counter
 
 ## Documentation

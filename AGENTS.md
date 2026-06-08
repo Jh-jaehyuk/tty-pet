@@ -24,7 +24,7 @@ Keep the MVP small:
 - Rule-based mood selection
 - Git dirty count polling
 
-Avoid expanding the first release into shell integration, PTY wrapping, automatic command detection, plugins, themes, or multiple pets.
+Avoid expanding the first release into shell integration, PTY wrapping, automatic command detection, automatic pass/fail hooks, themes, or multiple pets.
 
 ## Architecture Shape
 
@@ -77,6 +77,7 @@ Expected responsibilities:
 - `mood::phrases`: Store built-in phrase tables for the MVP.
 - `pet`: Own built-in sprites and image-to-ASCII custom pet rendering.
 - `mcp`: Own the local stdio MCP server and expose only safe tty-pet tools.
+- `plugins`: Own thin Codex and Claude Code plugin bundles that point at `tty-pet-mcp`.
 - `tui`: Own terminal lifecycle, tick loop, rendering, and responsive layout.
 - `app`: Coordinate project observation, DB reads/writes, and view state.
 

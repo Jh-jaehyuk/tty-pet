@@ -1,0 +1,14 @@
+{
+  "name": "tty-pet",
+  "displayName": "tty-pet",
+  "version": "0.1.0",
+  "description": "A playful terminal pet that reacts to your project state.",
+  "author": {
+    "name": "Jh-jaehyuk"
+  },
+  "repository": "https://github.com/Jh-jaehyuk/tty-pet",
+  "license": "MIT",
+  "keywords": ["terminal", "companion", "mcp", "tui"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

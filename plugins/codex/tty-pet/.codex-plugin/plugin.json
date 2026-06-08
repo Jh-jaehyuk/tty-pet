@@ -1,0 +1,19 @@
+{
+  "name": "tty-pet",
+  "version": "0.1.0",
+  "description": "A playful terminal pet that reacts to your project state.",
+  "author": {
+    "name": "Jh-jaehyuk"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "tty-pet",
+    "shortDescription": "Let Codex report project progress to tty-pet.",
+    "longDescription": "tty-pet exposes a local MCP server so Codex can read the current project companion state and record safe workflow events such as pass, fail, poke, treat, call, and nap.",
+    "developerName": "Jh-jaehyuk",
+    "category": "Productivity",
+    "capabilities": ["MCP server", "Agent skill"],
+    "defaultPrompt": "Use tty-pet to check the current companion state and record project workflow events when appropriate."
+  },
+  "mcpServers": "./.mcp.json"
+}
