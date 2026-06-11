@@ -17,6 +17,7 @@ Structured payloads should include enough material for an agent to answer natura
 - `reaction`: mood, short phrase, and optional motion hint.
 - `state`: factual bond, last test status, and last event values.
 - `presentation`: short Korean and English text that can be used directly or lightly adapted.
+- ASCII face material, including `reaction.face` and `presentation.markdown`, so agent conversations can show the pet without requiring a persistent embedded UI.
 
 `tty-pet status --json` remains factual machine output. MCP tools are agent-facing: `tty_pet_status` and `tty_pet_event` should both return factual state plus reaction and presentation material.
 

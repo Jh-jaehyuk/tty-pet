@@ -17,11 +17,14 @@ pub fn event_payload(event_kind: &str, status: &Value) -> Value {
 }
 
 pub fn status_payload(status: &Value) -> Value {
+    let mood = status["state"]["mood"].as_str().unwrap_or("idle");
+
     json!({
         "reaction": {
             "mood": status["state"]["mood"].clone(),
-            "phrase": phrase_for_mood(status["state"]["mood"].as_str().unwrap_or("idle")),
-            "motion": "idle"
+            "phrase": phrase_for_mood(mood),
+            "motion": "idle",
+            "face": face_for_mood(mood)
         },
         "state": state_summary(status),
         "presentation": presentation_for_status(status)
@@ -42,7 +45,18 @@ fn state_summary(status: &Value) -> Value {
 }
 
 fn reaction_for_event(event_kind: &str) -> Value {
-    let (mood, phrase, motion) = match event_kind {
+    let (mood, phrase, motion) = event_reaction_parts(event_kind);
+
+    json!({
+        "mood": mood,
+        "phrase": phrase,
+        "motion": motion,
+        "face": face_for_mood(mood)
+    })
+}
+
+fn event_reaction_parts(event_kind: &str) -> (&'static str, &'static str, &'static str) {
+    match event_kind {
         "pass" => ("happy", "green feels crunchy.", "hop"),
         "fail" => ("worried", "the red thing blinked.", "small-flinch"),
         "poke" => ("playful", "boop?", "jump"),
@@ -50,16 +64,11 @@ fn reaction_for_event(event_kind: &str) -> Value {
         "call" => ("playful", "you rang?", "come-over"),
         "nap" => ("sleepy", "tiny nap.", "curl-up"),
         _ => ("idle", "tiny paws online.", "idle"),
-    };
-
-    json!({
-        "mood": mood,
-        "phrase": phrase,
-        "motion": motion
-    })
+    }
 }
 
 fn presentation_for_event(event_kind: &str) -> Value {
+    let (mood, _, _) = event_reaction_parts(event_kind);
     let (ko, en) = match event_kind {
         "pass" => (
             "pass 기록 완료. 펫이 초록 불빛을 보고 살짝 뛰었어요.",
@@ -91,7 +100,7 @@ fn presentation_for_event(event_kind: &str) -> Value {
         ),
     };
 
-    presentation(ko, en)
+    presentation(ko, en, face_for_mood(mood))
 }
 
 fn presentation_for_status(status: &Value) -> Value {
@@ -109,7 +118,7 @@ fn presentation_for_status(status: &Value) -> Value {
         )
     };
 
-    presentation(&ko, &en)
+    presentation(&ko, &en, face_for_mood(mood))
 }
 
 fn recent_event_kind(status: &Value) -> Option<&str> {
@@ -123,15 +132,19 @@ fn recent_event_kind(status: &Value) -> Option<&str> {
     (age <= RECENT_EVENT_SECONDS).then_some(event_kind)
 }
 
-fn presentation(ko: &str, en: &str) -> Value {
+fn presentation(ko: &str, en: &str, face: &[&str]) -> Value {
+    let markdown = format!("```\n{}\n```\n{}", face.join("\n"), ko);
+
     json!({
         "ko": ko,
         "en": en,
+        "markdown": markdown,
         "style": "short_playful",
         "rules": [
             "Do not invent state.",
             "Do not give development advice.",
-            "Keep it to one or two short sentences."
+            "Keep it to one or two short sentences.",
+            "When the user wants to see the pet, include the face from presentation.markdown."
         ]
     })
 }
@@ -145,6 +158,18 @@ fn phrase_for_mood(mood: &str) -> &'static str {
         "busy" => "diff zoomies.",
         "sleepy" => "tiny stretch.",
         _ => "tiny paws online.",
+    }
+}
+
+fn face_for_mood(mood: &str) -> &'static [&'static str] {
+    match mood {
+        "happy" => &["\\(=^o^=)/"],
+        "worried" => &["(=;-;=)"],
+        "sleepy" => &["(= -.-=) zZ"],
+        "busy" => &["(=^._.^=) >", "  /   \\"],
+        "playful" => &[" (=^._.^=)"],
+        "calm" => &["(=^._.^=)"],
+        _ => &["(=^._.^=)"],
     }
 }
 

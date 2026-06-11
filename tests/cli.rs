@@ -146,6 +146,7 @@ fn mcp_status_tool_returns_agent_presentation_json() {
 
     assert_eq!(status["reaction"]["mood"], "idle");
     assert_eq!(status["reaction"]["phrase"], "tiny paws online.");
+    assert_eq!(status["reaction"]["face"][0], "(=^._.^=)");
     assert_eq!(status["state"]["project"]["name"], "tty-pet");
     assert_eq!(status["state"]["bond"], 0);
     assert_eq!(status["state"]["pet"]["image"]["kind"], "built-in");
@@ -154,6 +155,10 @@ fn mcp_status_tool_returns_agent_presentation_json() {
         .as_str()
         .expect("Korean presentation should be present")
         .contains("현재 펫은 idle 상태예요"));
+    assert!(status["presentation"]["markdown"]
+        .as_str()
+        .expect("Markdown presentation should be present")
+        .contains("(=^._.^=)"));
 }
 
 #[test]
@@ -200,12 +205,17 @@ fn mcp_event_tool_records_safe_pet_event() {
     assert_eq!(payload["reaction"]["mood"], "happy");
     assert_eq!(payload["reaction"]["phrase"], "snack acquired.");
     assert_eq!(payload["reaction"]["motion"], "hop");
+    assert_eq!(payload["reaction"]["face"][0], "\\(=^o^=)/");
     assert_eq!(payload["state"]["bond"], 2);
     assert_eq!(payload["state"]["last_event_kind"], "treat");
     assert_eq!(
         payload["presentation"]["ko"],
         "간식 전달 완료. 펫이 바로 튀어나와서 받아 갔어요."
     );
+    assert!(payload["presentation"]["markdown"]
+        .as_str()
+        .expect("Markdown presentation should be present")
+        .contains("\\(=^o^=)/"));
     assert_eq!(payload["presentation"]["style"], "short_playful");
 
     let output = Command::new(env!("CARGO_BIN_EXE_tty-pet"))
