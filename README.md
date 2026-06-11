@@ -4,24 +4,69 @@
 
 It is intentionally more toy than productivity tool: a cute, playful TUI pet that watches a project, reacts to Git dirtiness and manually marked test results, and remembers a small per-project bond in SQLite. You can use the built-in ASCII pet or set a project-specific pet from an image file.
 
-## MVP
+## Installation
 
-The first release is scoped to one default pet, passive watch mode, small direct interactions, and project-local state.
+Install from GitHub:
 
 ```sh
+cargo install --git https://github.com/Jh-jaehyuk/tty-pet --locked
+```
+
+Install from a local checkout while developing:
+
+```sh
+git clone https://github.com/Jh-jaehyuk/tty-pet.git
+cd tty-pet
+cargo install --path . --locked
+```
+
+After pulling updates from this repository, reinstall the local binary:
+
+```sh
+git pull
+cargo install --path . --locked
+```
+
+Check that both binaries are available:
+
+```sh
+tty-pet status --json
+tty-pet-mcp
+```
+
+## Usage
+
+Start the pet in the project you want it to watch:
+
+```sh
+cd my-project
 tty-pet watch
+```
+
+Use another terminal tab, tmux pane, or agent client to send events:
+
+```sh
 tty-pet pass
 tty-pet fail
 tty-pet poke
 tty-pet treat
 tty-pet call
 tty-pet nap
+```
+
+Set a project-specific image pet:
+
+```sh
 tty-pet image set ~/Pictures/pet.png
 tty-pet image clear
 tty-pet image status
+```
+
+Inspect project state:
+
+```sh
 tty-pet status
 tty-pet status --json
-tty-pet-mcp
 ```
 
 `tty-pet watch` opens a small responsive TUI. It is meant to run in a second terminal tab, a tmux split, or a side pane while the developer keeps using their normal shell.
@@ -37,6 +82,10 @@ tty-pet-mcp
 `tty-pet status --json` prints the same project state as machine-readable JSON for agents and scripts.
 
 `tty-pet-mcp` starts a local stdio MCP server that exposes safe `tty-pet` tools to agent clients.
+
+## MVP Scope
+
+The first release is scoped to one default pet, passive watch mode, small direct interactions, custom image pets, agent-facing MCP tools, and project-local state.
 
 ## Agent Plugins
 
@@ -55,6 +104,23 @@ Both plugin bundles expose the same local MCP tools:
 
 - `tty_pet_status`
 - `tty_pet_event`
+
+Claude Code can load the bundled plugin from a local checkout:
+
+```sh
+cd ~/tty-pet
+claude --plugin-dir ./plugins/claude-code/tty-pet
+```
+
+Then ask Claude Code for interactions such as:
+
+```text
+tty-pet 상태와 얼굴을 보여줘.
+treat 줘.
+테스트가 통과했으니 pass 이벤트 기록해줘.
+```
+
+MCP responses include structured state, short Korean/English presentation text, and an ASCII face through `presentation.markdown`, so agent replies can show the pet inside the conversation.
 
 See [Agent Integration](docs/AGENT_INTEGRATION.md) for setup notes and client-specific details.
 
